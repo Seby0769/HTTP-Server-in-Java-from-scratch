@@ -23,7 +23,7 @@ public class ConfigurationManager {
     }
 
     //Used to load a config file by the path provided:
-    public void localConfigurationFile(String filePath) {
+    public void loadConfigurationFile(String filePath) {
         FileReader fileReader = null;
         try {
             fileReader = new FileReader(filePath);
@@ -33,7 +33,7 @@ public class ConfigurationManager {
         StringBuffer sb = new StringBuffer();
         int i;
         try {
-            while((!((i = fileReader.read()) != -1))) {
+            while((i = fileReader.read()) != -1) {
                 sb.append((char) i);
             }
         } catch (IOException e) {
