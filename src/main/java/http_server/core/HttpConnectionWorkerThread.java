@@ -4,6 +4,7 @@ import http_server.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,6 +26,11 @@ public class HttpConnectionWorkerThread extends Thread{
         try {
             inputStream = socket.getInputStream();
             outputStream = socket.getOutputStream();
+
+            int _byte;
+            while ((_byte = inputStream.read()) >= 0) {
+                System.out.print((char)_byte);
+            }
 
             String html = "<html><head><title>Simple Java HTTP Server</title></head><body><h1>This page was served using my http server</h1></body></html>";
 
