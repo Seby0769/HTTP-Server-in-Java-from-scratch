@@ -1,10 +1,10 @@
 package http;
 
-public class HttpParsingExeption extends Exception{
+public class HttpParsingException extends Exception{
 
     private final HttpStatusCode errorCode;
 
-    public HttpParsingExeption(HttpStatusCode errorCode) {
+    public HttpParsingException(HttpStatusCode errorCode) {
         super(errorCode.MESSAGE);
         this.errorCode = errorCode;
     }

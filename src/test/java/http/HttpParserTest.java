@@ -8,6 +8,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class HttpParserTest {
 
@@ -20,10 +23,19 @@ class HttpParserTest {
 
     @Test
     void parseHttpRequest() {
-        httpParser.parseHttpRequest(generateValidTestCase());
+        HttpRequest request = null;
+        try {
+            request = httpParser.parseHttpRequest(
+                    generateValidGETTestCase()
+            );
+        } catch (HttpParsingException e) {
+            fail(e);
+        }
+
+        assertEquals(request.getMethod(), HttpMethod.GET);
     }
 
-    private InputStream generateValidTestCase() {
+    private InputStream generateValidGETTestCase() {
         String rawData = "GET / HTTP/1.1\r\n" +
                 "Host: localhost:8080\r\n" +
                 "Connection: keep-alive\r\n" +
@@ -38,6 +50,89 @@ class HttpParserTest {
                 "Sec-Fetch-Mode: navigate\r\n" +
                 "Sec-Fetch-User: ?1\r\n" +
                 "Sec-Fetch-Dest: document\r\n" +
+                "Accept-Encoding: gzip, deflate, br, zstd\r\n" +
+                "Accept-Language: en-US,en;q=0.6\r\n" + "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                rawData.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    @Test
+    void parseHttpRequestBadMethod1() {
+        try {
+            HttpRequest request = httpParser.parseHttpRequest(
+                    generateBADTestCaseMethodName1()
+            );
+            fail();
+        } catch (HttpParsingException e) {
+            assertEquals(e.getErrorCode(), HttpStatusCode.SERVER_ERROR_501_NOT_IMPLEMENTED);
+        }
+    }
+    private InputStream generateBADTestCaseMethodName1() {
+        String rawData = "GeT / HTTP/1.1\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Connection: keep-alive\r\n" +
+                "Accept-Encoding: gzip, deflate, br, zstd\r\n" +
+                "Accept-Language: en-US,en;q=0.6\r\n" + "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                rawData.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    @Test
+    void parseHttpRequestBadMethod2() {
+        try {
+            HttpRequest request = httpParser.parseHttpRequest(
+                    generateBADTestCseMethodName2()
+            );
+            fail();
+        } catch (HttpParsingException e) {
+            assertEquals(e.getErrorCode(), HttpStatusCode.SERVER_ERROR_501_NOT_IMPLEMENTED);
+        }
+    }
+
+    private InputStream generateBADTestCseMethodName2() {
+        String rawData = "GEEEET / HTTP/1.1\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Connection: keep-alive\r\n" +
+                "Accept-Encoding: gzip, deflate, br, zstd\r\n" +
+                "Accept-Language: en-US,en;q=0.6\r\n" + "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                rawData.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    @Test
+    void parseHttpRequestInvNumItems1() {
+        try {
+            HttpRequest request = httpParser.parseHttpRequest(
+                    generateBADTestCaseRequestLineInvNumItems1()
+            );
+            fail();
+        } catch (HttpParsingException e) {
+            assertEquals(e.getErrorCode(), HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+        }
+    }
+
+    private InputStream generateBADTestCaseRequestLineInvNumItems1() {
+        String rawData = "GET / AAAAAAAAA HTTP/1.1\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Connection: keep-alive\r\n" +
                 "Accept-Encoding: gzip, deflate, br, zstd\r\n" +
                 "Accept-Language: en-US,en;q=0.6\r\n" + "\r\n";
 
