@@ -1,4 +1,4 @@
-package http;
+ package http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,7 @@ public class HttpParser {
     private final static Logger LOGGER = LoggerFactory.getLogger(HttpParser.class);
 
     private static final int SP = 0x20; // 32
-    private static final int CR = 0x0D; // 18
+    private static final int CR = 0x0D; // 13
     private static final int LF = 0x0A; // 10
 
     public HttpRequest parseHttpRequest(InputStream inputStream) throws HttpParsingException{
@@ -48,8 +48,14 @@ public class HttpParser {
                     if(!methodParsed || !requestTargetParsed){
                         throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
                     }
-
+                    try {
+                        request.setHttpVersion(processingDataBuffer.toString());
+                    } catch (BadHttpVersionException e) {
+                        throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+                    }
                     return;
+                }else {
+                    throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
                 }
             }
             if (_byte == SP){
@@ -59,6 +65,7 @@ public class HttpParser {
                     methodParsed = true;
                 }else if (!requestTargetParsed){
                     LOGGER.debug("Request Line REQ TARGET to Process: {}" , processingDataBuffer.toString());
+                    request.setRequestTarget(processingDataBuffer.toString());
                     requestTargetParsed = true;
                 } else {
                     throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
