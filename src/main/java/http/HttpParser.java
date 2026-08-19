@@ -34,7 +34,11 @@ import java.util.regex.Pattern;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        parseBody(reader, request);
+        try {
+            parseBody(reader, request);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return request;
     }
@@ -133,6 +137,28 @@ import java.util.regex.Pattern;
         }
     }
 
-    private void parseBody(InputStreamReader reader, HttpRequest request) {
-    }
+     private void parseBody(InputStreamReader reader, HttpRequest request) throws IOException, HttpParsingException {
+        String contentLengthHeader = request.getHeader("content-length");
+
+        if (contentLengthHeader != null){
+            try{
+                int contentLength = Integer.parseInt(contentLengthHeader.trim());
+
+                if(contentLength > 0){
+                    StringBuilder bodyBuilder = new StringBuilder();
+                    for (int i = 0; i < contentLength; i++){
+                        int _byte = reader.read();
+                        if (_byte == -1){
+                            throw  new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+                        }
+                        bodyBuilder.append((char) _byte);
+                    }
+                    request.setBody(bodyBuilder.toString());
+                    LOGGER.debug("Parsed Request Body: " + request.getBody());
+                }
+            }catch (NumberFormatException e){
+                throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+            }
+        }
+     }
 }

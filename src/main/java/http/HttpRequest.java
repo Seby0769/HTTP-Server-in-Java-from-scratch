@@ -1,6 +1,5 @@
 package http;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -11,6 +10,7 @@ public class HttpRequest extends HttpMessage {
     private String originalHttpVersion; //literal from request
     private HttpVersion bestCompatibleHttpVersion;
     private HashMap<String, String> headers = new HashMap<>();
+    private String body;
 
     HttpRequest() {}
 
@@ -65,5 +65,13 @@ public class HttpRequest extends HttpMessage {
 
     public String getHeader(String headerName){
         return headers.get(headerName.toLowerCase());
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 }
