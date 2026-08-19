@@ -1,5 +1,6 @@
 package http_server.core;
 
+import http.*;
 import http_server.HttpServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,23 +28,24 @@ public class HttpConnectionWorkerThread extends Thread{
             inputStream = socket.getInputStream();
             outputStream = socket.getOutputStream();
 
-            int _byte;
-            while ((_byte = inputStream.read()) >= 0) {
-                System.out.print((char)_byte);
+            HttpParser parser = new HttpParser();
+            try {
+                HttpRequest request = parser.parseHttpRequest(inputStream);
+                LOGGER.info("Successfully parsed request for target: " + request.getRequestTarget());
+            } catch (HttpParsingException e) {
+                LOGGER.error("Failed to parse request", e);
+                HttpResponse errorResponse = new HttpResponse(HttpVersion.HTTP_1_1, e.getErrorCode());
+                outputStream.write(errorResponse.build().getBytes());
+                return;
             }
 
             String html = "<html><head><title>Simple Java HTTP Server</title></head><body><h1>This page was served using my http server</h1></body></html>";
 
-            final String CRLF = "\r\n"; //13, 10
+            HttpResponse response = new HttpResponse(HttpVersion.HTTP_1_1, HttpStatusCode.SUCCESS_200_OK);
+            response.addHeaders("Content-Type", "text/html");
+            response.setBody(html);
 
-            String response =
-                    "HTTP/1.1 200 OK" + CRLF + //Status Line : HTTP VERSION RESPONSE_CODE RESPONSE_MESSAGE
-                            "Content-Length: " + html.getBytes().length + CRLF + //HEADER
-                            CRLF +
-                            html +
-                            CRLF + CRLF;
-
-            outputStream.write(response.getBytes());
+            outputStream.write(response.build().getBytes());
 
             LOGGER.info("Connection Processing Finished.");
         } catch (IOException e) {

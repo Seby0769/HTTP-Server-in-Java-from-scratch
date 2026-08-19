@@ -1,6 +1,9 @@
 package http;
 
 public enum HttpStatusCode {
+    /* --- SUCCESS ---*/
+    SUCCESS_200_OK(200, "OK"),
+
     /* --- CLIENT ERRORS ---*/
     CLIENT_ERROR_400_BAD_REQUEST(400, "Bad Request"),
     CLIENT_ERROR_405_METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
