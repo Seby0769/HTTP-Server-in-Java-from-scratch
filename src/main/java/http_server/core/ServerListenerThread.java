@@ -16,11 +16,13 @@ public class ServerListenerThread extends Thread{
     private int port;
     private String webroot;
     private ServerSocket serverSocket;
+    private HttpRouter router;
 
-    public ServerListenerThread(int port, String webroot) throws IOException {
+    public ServerListenerThread(int port, String webroot, HttpRouter router) throws IOException {
         this.port = port;
         this.webroot = webroot;
         this.serverSocket = new ServerSocket(this.port);
+        this.router = router;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class ServerListenerThread extends Thread{
                 Socket socket = serverSocket.accept();
                 LOGGER.info(" * Connection accepted: " + socket.getInetAddress());
 
-                HttpConnectionWorkerThread workerThread = new HttpConnectionWorkerThread(socket);
+                HttpConnectionWorkerThread workerThread = new HttpConnectionWorkerThread(socket, router);
                 workerThread.start();
             }
         } catch (IOException e) {

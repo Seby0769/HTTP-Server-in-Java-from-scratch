@@ -16,8 +16,11 @@ public class HttpConnectionWorkerThread extends Thread{
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HttpServer.class);
     private Socket socket;
-    public HttpConnectionWorkerThread (Socket socket){
+    private HttpRouter router;
+
+    public HttpConnectionWorkerThread (Socket socket, HttpRouter router){
         this.socket = socket;
+        this.router = router;
     }
 
     @Override
@@ -32,6 +35,8 @@ public class HttpConnectionWorkerThread extends Thread{
             try {
                 HttpRequest request = parser.parseHttpRequest(inputStream);
                 LOGGER.info("Successfully parsed request for target: " + request.getRequestTarget());
+                HttpResponse response = router.route(request);
+                outputStream.write(response.build().getBytes());
             } catch (HttpParsingException e) {
                 LOGGER.error("Failed to parse request", e);
                 HttpResponse errorResponse = new HttpResponse(HttpVersion.HTTP_1_1, e.getErrorCode());

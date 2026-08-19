@@ -14,7 +14,7 @@ public class HttpResponse extends HttpMessage{
     }
 
     public void addHeaders(String name, String value){
-        headers.put(name, value);
+        headers.put(name.toLowerCase(), value);
     }
 
     public void setBody(String body){
